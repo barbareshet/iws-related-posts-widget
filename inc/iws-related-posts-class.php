@@ -21,9 +21,9 @@ class iws_related_posts extends WP_Widget{
     public function widget($args, $instance){
         //get the values
         $title = apply_filters('widget_title', $instance['title']);
-        $tax = esc_attr($instance['tax']);
-        $count = esc_attr($instance['count']);
-        $post_type = esc_attr($instance['post_type']);
+        $tax = esc_attr($instance['tax']) ? esc_attr($instance['tax']) : 'category';
+        $count = esc_attr($instance['count']) ? esc_attr($instance['count']) : 4;
+        $post_type = esc_attr($instance['post_type']) ? esc_attr($instance['post_type']) : 'post';
 
 
         echo $args['before_widget'];
@@ -31,7 +31,7 @@ class iws_related_posts extends WP_Widget{
         if(!empty($title)){
             echo $args['before_title'] . $title .$args['after_title'];
         }
-        echo $this->show_my_repos($title, $tax, $count, $post_type);
+        echo $this->show_my_related_posts($title, $tax, $count, $post_type);
 
         echo $args['after_widget'];
     }
@@ -62,7 +62,7 @@ class iws_related_posts extends WP_Widget{
         if(isset($instance['post_type'])){
             $post_type = $instance['post_type'];
         }else{
-            $post_type = 6;
+            $post_type = 'post';
         }
         //Frontend Widget Form
         ?>
@@ -75,7 +75,7 @@ class iws_related_posts extends WP_Widget{
             <input type="text" class="widefat" id="<?php echo $this->get_field_id('tax');?>" name="<?php echo $this->get_field_name('tax');?>" value="<?php echo esc_html__($tax);?>">
         </p>
         <p>
-            <labal for="<?php echo $this->get_field_id('count');?>"><?php echo _e('Count', TEXT_DOMAIN);?></labal>
+            <labal for="<?php echo $this->get_field_id('count');?>"><?php echo _e('Number of Posts to Show', TEXT_DOMAIN);?></labal>
             <input type="text" class="widefat" id="<?php echo $this->get_field_id('count');?>" name="<?php echo $this->get_field_name('count');?>" value="<?php echo esc_html__($count);?>">
         </p>
         <p>
@@ -88,42 +88,49 @@ class iws_related_posts extends WP_Widget{
     public function update($new_instance, $old_instance){
         $instance = array();
         $instance['title'] = (!empty($new_instance['title'])) ? strip_tags($new_instance['title']) : '';
-        $tax = $instance['tax'] = (!empty($new_instance['tax'])) ? strip_tags($new_instance['tax']) : '';
+        $instance['tax'] = (!empty($new_instance['tax'])) ? strip_tags($new_instance['tax']) : '';
         $instance['count'] = (!empty($new_instance['count'])) ? strip_tags($new_instance['count']) : '';
         $instance['post_type'] = (!empty($new_instance['post_type'])) ? strip_tags($new_instance['post_type']) : '';
 
         return $instance;
     }
 //Show Repositories
-    public function show_my_repos($title, $tax, $count, $post_type){
+
+    public function show_my_related_posts($title, $tax, $count, $post_type){
         global $post;
 
-        $tax = $instance['tax'] ? $instance['tax'] : 'category';
-        $count =  $instance['count'] ?  $instance['count'] : 4;
-        $post_type = $instance['post_type'] ? $instance['post_type'] : 'post';
+
         $post_terms = wp_get_object_terms($post->ID, 'category', array('fields'=>'ids'));
+
         $args = array(
             'post_type' => $post_type,
             'post__not_in' => array($post->ID),
             'posts_per_page'   =>   $count,
-            'tax_query' => array(
-                array(
-                    'taxonomy' => $tax,
-                    'field' => 'id',
-                    'terms' => $post_terms
-                )
-            )
+//            'tax_query' => array(
+//                array(
+//                    'taxonomy' => $tax,
+//                    'field' => 'id',
+//                    'terms' => $post_terms
+//                )
+//            )
         );
         $related_query = new WP_Query($args);
 
-        if($related_query->have_posts() ){
-            $output = '<div claaa="row">';
-            while ($related_query->have_posts() ) : $related_query->the_post();
-                    include ( plugin_dir_path(__FILE__) . '/iws-related-posts-widget-content.php');
-            endwhile;
-            $output .= "</div>";
+        if($related_query){
+            $output = '<div class="row">';
+
+                while ($related_query->have_posts() ): $related_query->the_post();
+
+                        $output .= include( plugin_dir_path(__FILE__) . '/iws-related-posts-widget-content.php');
+
+                    wp_reset_postdata();
+                endwhile;
+
+            $output .= '</div>';
+        }else{
+            __e('Nothing more to show');
         }
-        wp_reset_query();
+
         //Build the output
         return $output;
     }
