@@ -117,11 +117,12 @@ class iws_related_posts extends WP_Widget{
         $related_query = new WP_Query($args);
 
         if($related_query){
+            ob_start();
             $output = '<div class="row">';
 
                 while ($related_query->have_posts() ): $related_query->the_post();
 
-                        $output .= include( plugin_dir_path(__FILE__) . '/iws-related-posts-widget-content.php');
+                        $output .= require( plugin_dir_path(__FILE__) . '/iws-related-posts-widget-content.php');
 
                     wp_reset_postdata();
                 endwhile;
@@ -130,7 +131,7 @@ class iws_related_posts extends WP_Widget{
         }else{
             __e('Nothing more to show');
         }
-
+        $output = ob_get_clean();
         //Build the output
         return $output;
     }
