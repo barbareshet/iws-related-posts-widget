@@ -8,7 +8,7 @@
  * Author URI: http://www.barbareshet.co.il
  * Plugin Site: http://www.barbareshet.co.il
  * Text Domain: iws_rpp
- *
+ * Domain Path: /languages
  **/
 //Exit if accessed directly
 if (!defined('ABSPATH')){
