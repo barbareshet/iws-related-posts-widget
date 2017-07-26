@@ -106,13 +106,13 @@ class iws_related_posts extends WP_Widget{
             'post_type' => $post_type,
             'post__not_in' => array($post->ID),
             'posts_per_page'   =>   $count,
-//            'tax_query' => array(
-//                array(
-//                    'taxonomy' => $tax,
-//                    'field' => 'id',
-//                    'terms' => $post_terms
-//                )
-//            )
+            'tax_query' => array(
+                array(
+                    'taxonomy' => $tax,
+                    'field' => 'id',
+                    'terms' => $post_terms
+                )
+            )
         );
         $related_query = new WP_Query($args);
 
